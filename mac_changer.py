@@ -22,13 +22,13 @@ def change_mac(interface, new_mac_address):
   subprocess.call(["ifconfig", interface, "up"])
   print("[+] ifconfig " + interface)
 
+
+def get_current_mac_address(interface):
+  ifconfig_result = (subprocess.check_output(["ifconfig", interface])).decode()
+  ether_line_result = re.search(r"ether (\w\w:){5}\w\w", ifconfig_result) # .re.search(r"(\w\w:){5}\w\w")
+  mac_address_search_result = ether_line_result.group(0).replace("ether ","")
+  return(mac_address_search_result)
+
 options = get_arguments()
+print(get_current_mac_address(options.interface))
 # change_mac(options.interface, options.new_mac_address)
-
-ifconfig_result_bytes = subprocess.check_output(["ifconfig", options.interface])
-ifconfig_result = ifconfig_result_bytes.decode()
-print(ifconfig_result)
-
-ether_search_result = re.search(r"ether (\w\w:){5}\w\w", ifconfig_result) # .re.search(r"(\w\w:){5}\w\w")
-mac_address_search_result = ether_search_result.group(0).replace("ether ","")
-print(mac_address_search_result)
