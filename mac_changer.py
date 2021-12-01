@@ -25,9 +25,12 @@ def change_mac(interface, new_mac_address):
 
 def get_current_mac_address(interface):
   ifconfig_result = (subprocess.check_output(["ifconfig", interface])).decode()
-  ether_line_result = re.search(r"ether (\w\w:){5}\w\w", ifconfig_result) # .re.search(r"(\w\w:){5}\w\w")
-  mac_address_search_result = ether_line_result.group(0).replace("ether ","")
-  return(mac_address_search_result)
+  ether_line_result = re.search(r"ether (\w\w:){5}\w\w", ifconfig_result) 
+  if ether_line_result:
+    mac_address_search_result = ether_line_result.group(0).replace("ether ","")
+    return(mac_address_search_result)
+  else:
+    return("[-] Could not read MAC address.")
 
 options = get_arguments()
 print(get_current_mac_address(options.interface))
