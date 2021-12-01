@@ -16,12 +16,10 @@ def get_arguments():
   return options
 
 def change_mac(interface, new_mac_address):
-  print("[+] Changing MAC address for " + interface + " to " + new_mac_address)
+  print("[+] Changing MAC address for " + interface + ": " + new_mac_address)
   subprocess.call(["ifconfig", interface, "down"])
   subprocess.call(["ifconfig", interface, "hw", "ether", new_mac_address])
   subprocess.call(["ifconfig", interface, "up"])
-  print("[+] ifconfig " + interface)
-
 
 def get_current_mac_address(interface):
   ifconfig_result = (subprocess.check_output(["ifconfig", interface])).decode()
@@ -30,8 +28,13 @@ def get_current_mac_address(interface):
     mac_address_search_result = ether_line_result.group(0).replace("ether ","")
     return(mac_address_search_result)
   else:
-    return("[-] Could not read MAC address.")
+    print("[-] Could not read MAC address.")
+    exit(1)
 
 options = get_arguments()
-print(get_current_mac_address(options.interface))
-# change_mac(options.interface, options.new_mac_address)
+starting_mac = (get_current_mac_address(options.interface))
+change_mac(options.interface, options.new_mac_address)
+ending_mac = (get_current_mac_address(options.interface))
+
+print("[+] Starting MAC for         " + options.interface + ": " + starting_mac)
+print("[+] Ending MAC for           " + options.interface + ": " + ending_mac)
