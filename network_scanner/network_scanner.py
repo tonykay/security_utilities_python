@@ -2,32 +2,42 @@
 
 import scapy.all as scapy
 import optparse
-import re
-
 
 def get_arguments():    
     parser = optparse.OptionParser()
     parser.add_option("-v", action="store_true", dest="verbose",default=False, help="Set verbose output")
-    # parser.add_option("-v", "--verbose", dest="verbose", help="Verbose output")
+    parser.add_option("-t", "--target", dest="ip_address", help="Target ip address or range (10.0.0.1/24")
     (options, arguments) = parser.parse_args()
-    # if not options.verbose:
-    #     verbose = False
+
+    if not options.ip_address:
+        parser.error("[-] Please specify a target IP address or range")
+        exit(1)
     return options
 
-def scan(ip_address, options):
-    arp_request = scapy.ARP(pdst=ip_address)
+def scan(options):
+    arp_request = scapy.ARP(pdst=options.ip_address)
     broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
     arp_request_broadcast = broadcast/arp_request
     if options.verbose:
         print(arp_request_broadcast.summary())
         arp_request_broadcast.show()
+    targets_found = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
 
-    # print(arp_request.summary())
-    # print(broadcast.summary())
-    # scapy.ls(scapy.ARP())
-    # scapy.ls(scapy.Ether())
+    target_list = []
+    for element in targets_found:
+        target_element = { "ip": element[1].psrc, "mac": element[1].hwsrc }
+        target_list.append(target_element)
+        
+    return(target_list)
 
-#verbose = False
+def print_target_attributes (target_list):
+    print("IP\t\tMAC")
+    print("------------------------------------------------------------------------")
+
+    for target in target_list:
+
+        print(target["ip"] + "\t" + target["mac"])
+
 options = get_arguments()
-
-scan("10.211.55.1/24", options)
+targets = scan(options)
+print_target_attributes(targets)
