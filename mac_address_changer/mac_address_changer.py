@@ -31,16 +31,17 @@ def get_current_mac_address(interface):
         print("[-] Could not read MAC address.")
         exit(1)
 
-options = get_arguments()
-starting_mac = (get_current_mac_address(options.interface))
-change_mac(options.interface, options.new_mac_address)
-ending_mac = (get_current_mac_address(options.interface))
 
-if ending_mac == options.new_mac_address:
-    print("[+] Success")
-else:
-    print("[-] Failed")
+if __name__ == "__main__":
+    options = get_arguments()
+    starting_mac = (get_current_mac_address(options.interface))
+    change_mac(options.interface, options.new_mac_address)
+    ending_mac = (get_current_mac_address(options.interface))
 
+    if ending_mac == options.new_mac_address:
+        print("[+] Success")
+    else:
+        print("[-] Failed")
 
-print("[+] Starting MAC for         " + options.interface + ": " + starting_mac)
-print("[+] Ending MAC for           " + options.interface + ": " + ending_mac)
+    print("[+] Starting MAC for         " + options.interface + ": " + starting_mac)
+    print("[+] Ending MAC for           " + options.interface + ": " + ending_mac)
