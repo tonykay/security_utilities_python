@@ -3,6 +3,7 @@
 from time import sleep
 import scapy.all as scapy
 import subprocess
+import argparse
 
 from scapy.packet import Packet
 
@@ -10,6 +11,21 @@ from scapy.packet import Packet
 target = {"name": "target", "ip": "10.211.55.6", "mac": "00:1c:42:aa:7c:10"}
 router = {"name": "router", "ip": "10.211.55.1", "mac": "00:1c:42:00:00:18"}
 verbose = False
+
+def get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("-r", "--router", type=str, help="Router IP or hostname")
+    parser.add_argument("-t", "--target", type=str, help="Target IP or hostname")
+    args = parser.parse_args()
+    # if args.verbose:
+    #     print("verbosity turned on")
+    # if not args.domain:
+    #     parser.error("[-] Please specify a domain, use --help for more info.")
+    return args
+
+
+
 
 def get_mac(options):
     ''' TODO '''

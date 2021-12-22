@@ -2,7 +2,7 @@
 
 Simple series of security utilities inspired by [Zsecurity](https://zsecurity.org/).
 More for learning than anything else and if you need a network scanner for example stick with `nmap` or your current favorite.
-
+Primarily tested from a kali 2021.4 instance run as an ARM VM on a Mac M1 with Parallels.
 All python3, all using mainly standard libs as much as possible.
 
 ### Tools
