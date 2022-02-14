@@ -1,0 +1,22 @@
+---
+- name: Scan a host
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  tasks:
+
+    - name: Scan host ports
+      nmap:
+        targets: "{{ inventory_hostname }}"
+        ports: "1-1024"
+        arguments: "-O"
+        sudo: true
+      register: r_nmap_scan
+
+    - name: Print scan results
+      debug:
+        var: r_nmap_scan | to_nice_json
+
+...
